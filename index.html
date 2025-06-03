@@ -6,13 +6,14 @@
     <title>Modern Tarımda Yapay Zeka Bitki Analizi</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <style>
         body {
             font-family: 'Inter', sans-serif;
             background-color: #f0fdf4; /* Açık yeşil arka plan */
             overflow-x: hidden; /* Yatay kaydırmayı engelle */
         }
-        .container-main { /* Ana içerik container'ı için yeni class */
+        .container-main {
             max-width: 900px;
             margin: 2rem auto;
             padding: 2rem;
@@ -20,16 +21,16 @@
             border-radius: 0.75rem;
             box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
         }
-        .app-title { /* Ana başlık için özel class */
-            color: #166534; /* Koyu yeşil başlık */
+        .app-title {
+            color: #166534;
         }
         .button-primary {
-            background-color: #22c55e; /* Canlı yeşil buton */
+            background-color: #22c55e;
             color: white;
             transition: background-color 0.3s ease, transform 0.2s ease, box-shadow 0.2s ease;
         }
         .button-primary:hover {
-            background-color: #16a34a; /* Buton hover rengi */
+            background-color: #16a34a;
             transform: translateY(-2px);
             box-shadow: 0 4px 12px rgba(0,0,0,0.15);
         }
@@ -48,7 +49,7 @@
             box-shadow: 0 4px 12px rgba(0,0,0,0.1);
         }
         .image-preview-container {
-            border: 2px dashed #a3e635; /* Yeşil kesikli çerçeve */
+            border: 2px dashed #a3e635;
             min-height: 150px;
             display: flex;
             flex-wrap: wrap;
@@ -62,7 +63,7 @@
             object-fit: cover;
             border: 1px solid #ddd;
             border-radius: 0.375rem;
-            opacity: 0; /* Animasyon için başlangıç */
+            opacity: 0;
             animation: fadeInImage 0.5s ease-out forwards;
         }
         .loader {
@@ -78,8 +79,6 @@
             0% { transform: rotate(0deg); }
             100% { transform: rotate(360deg); }
         }
-
-        /* Modal Animasyonları */
         .modal {
             display: none;
             position: fixed;
@@ -90,7 +89,7 @@
             height: 100%;
             overflow: auto;
             background-color: rgba(0,0,0,0.6);
-            opacity: 0; /* Animasyon için başlangıç */
+            opacity: 0;
             transition: opacity 0.3s ease-in-out;
         }
         .modal.active {
@@ -106,7 +105,7 @@
             border-radius: 0.5rem;
             text-align: center;
             box-shadow: 0 5px 15px rgba(0,0,0,0.3);
-            transform: scale(0.95) translateY(-20px); /* Animasyon için başlangıç */
+            transform: scale(0.95) translateY(-20px);
             opacity: 0;
             transition: transform 0.3s cubic-bezier(0.18, 0.89, 0.32, 1.28), opacity 0.3s ease-in-out;
         }
@@ -122,8 +121,12 @@
         .modal-close-button:hover {
             background-color: #dc2626;
         }
-
-        /* Bölüm Giriş Animasyonları */
+        .page-section { /* Sayfa içeriklerini gizlemek/göstermek için */
+            display: none;
+        }
+        .page-section.active {
+            display: block;
+        }
         .animated-section {
             opacity: 0;
             transform: translateY(30px);
@@ -139,7 +142,9 @@
         }
         .nav-link {
             position: relative;
-            transition: color 0.3s ease;
+            transition: color 0.3s ease, background-color 0.3s ease;
+            padding: 0.5rem 1rem;
+            border-radius: 0.375rem;
         }
         .nav-link::after {
             content: '';
@@ -149,90 +154,185 @@
             bottom: -4px;
             left: 50%;
             transform: translateX(-50%);
-            background-color: #d1fae5; /* Açık yeşil alt çizgi */
+            background-color: #d1fae5;
             transition: width 0.3s ease;
         }
-        .nav-link:hover::after {
+        .nav-link:hover::after, .nav-link.active-link::after {
             width: 100%;
         }
-        .nav-link:hover {
+        .nav-link:hover, .nav-link.active-link {
             color: #d1fae5;
+            background-color: rgba(255,255,255,0.1);
         }
-
+        .weather-card {
+            background: linear-gradient(135deg, #6EE7B7 0%, #3B82F6 100%);
+            color: white;
+            padding: 1.5rem;
+            border-radius: 0.75rem;
+            box-shadow: 0 8px 16px rgba(0,0,0,0.2);
+        }
+        .weather-icon {
+            font-size: 3rem;
+            margin-bottom: 0.5rem;
+        }
     </style>
 </head>
 <body class="antialiased">
 
     <nav class="bg-green-700 text-white p-4 shadow-lg sticky top-0 z-50">
         <div class="container mx-auto flex justify-between items-center max-w-screen-xl">
-            <div class="text-2xl font-bold tracking-tight">AI Fotoğraf Tarım Analizi</div>
-	    <div class="text-1xl font-italic">Created by ozkanahmet </div>
-
-            <div>
-                <a href="#" class="nav-link px-3 py-2 rounded text-lg">Ana Sayfa</a>
-                <!-- <a href="#" class="nav-link px-3 py-2 rounded text-lg ml-2">Hakkımızda</a> -->
-                <!-- <a href="#" class="nav-link px-3 py-2 rounded text-lg ml-2">İletişim</a> -->
+            <div class="text-2xl font-bold tracking-tight">AI Tarım</div>
+            <div id="navLinks">
+                <a href="#anasayfa" class="nav-link text-lg active-link" data-page="anaSayfaSection">Fotoğraf Analiz</a>
+                <a href="#sulama" class="nav-link text-lg ml-2" data-page="sulamaOnerileriSection">Sulama Önerileri</a>
+                <a href="#hakkimizda" class="nav-link text-lg ml-2" data-page="hakkimizdaSection">Hakkımızda</a>
+                <a href="#iletisim" class="nav-link text-lg ml-2" data-page="iletisimSection">İletişim</a>
             </div>
         </div>
     </nav>
 
     <div class="container-main">
-        <header class="text-center mb-10 animated-section">
-            <h1 class="text-4xl font-bold app-title">🌿 Tarımda Yapay Zeka Destekli Bitki Analizi 🌿</h1>
-            <p class="text-gray-700 mt-3 text-lg">Bitkilerinizin fotoğraflarını net sonuç için net ve her türlü detayını yükleyin, notlarınızı ekleyin ve analiz türünü seçerek yapay zekadan detaylı bilgi alın!</p>
-        </header>
-
-        <main>
-            <section class="mb-8 p-6 bg-white rounded-lg shadow-sm border border-gray-200 animated-section">
-                <label for="plantImages" class="block text-lg font-medium text-gray-800 mb-2">Bitki Fotoğrafları Seçin (Birden fazla seçebilirsiniz):</label>
-                <input type="file" id="plantImages" accept="image/png, image/jpeg" multiple class="block w-full text-base text-gray-900 border border-gray-300 rounded-lg cursor-pointer bg-gray-50 focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500 p-3 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-green-50 file:text-green-700 hover:file:bg-green-100 transition-colors">
-            </section>
-
-            <section class="mb-8 animated-section">
-                <h2 class="text-2xl font-semibold text-gray-800 mb-3">Fotoğraf Önizleme</h2>
-                <div id="imagePreviewContainer" class="image-preview-container rounded-lg ">
-                    <p id="imagePlaceholder" class="text-gray-500 w-full text-center text-lg">Lütfen bir veya daha fazla fotoğraf seçin.</p>
-                </div>
-            </section>
-
-            <div class="grid md:grid-cols-2 gap-8 mb-8">
-                <section class="p-6 bg-white rounded-lg shadow-sm border border-gray-200 animated-section">
-                    <label for="analysisType" class="block text-lg font-medium text-gray-800 mb-2">Analiz Türü Seçin:</label>
-                    <select id="analysisType" class="block w-full p-3.5 border border-gray-300 rounded-lg bg-gray-50 focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500 text-base">
-                        <option value="hastalik_zararli_tespiti">Hastalık ve Zararlı Tespiti</option>
-                        <option value="besin_eksikligi">Besin Eksikliği Analizi</option>
-                        <option value="gelisim_takibi">Genel Gelişim Takibi</option>
-                        <option value="sulama_onerisi">Sulama Durumu ve Önerisi</option>
-                        <option value="toprak_yorumu">Toprak Görünümü Yorumlama (Fotoğraftan)</option>
-                        <option value="genel_analiz">Genel Bitki Sağlığı Analizi (Kapsamlı)</option>
-                    </select>
+        <!-- Ana Sayfa (Bitki Analizi) Bölümü -->
+        <section id="anaSayfaSection" class="page-section active">
+            <header class="text-center mb-10 animated-section">
+                <h1 class="text-4xl font-bold app-title">🌿 Tarımda Yapay Zeka Destekli Bitki Analizi 🌿</h1>
+                <p class="text-gray-700 mt-3 text-lg">Bitkilerinizin fotoğraflarını yükleyin, notlarınızı ekleyin ve analiz türünü seçerek yapay zekadan detaylı bilgi alın!</p>
+            </header>
+            <main>
+                <section class="mb-8 p-6 bg-white rounded-lg shadow-sm border border-gray-200 animated-section">
+                    <label for="plantImages" class="block text-lg font-medium text-gray-800 mb-2">Bitki Fotoğrafları Seçin (Birden fazla seçebilirsiniz):</label>
+                    <input type="file" id="plantImages" accept="image/png, image/jpeg" multiple class="block w-full text-base text-gray-900 border border-gray-300 rounded-lg cursor-pointer bg-gray-50 focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500 p-3 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-green-50 file:text-green-700 hover:file:bg-green-100 transition-colors">
                 </section>
-
-                <section class="p-6 bg-white rounded-lg shadow-sm border border-gray-200 animated-section">
-                    <label for="userNotes" class="block text-lg font-medium text-gray-800 mb-2">Ek Notlar veya Sorularınız (İsteğe Bağlı):</label>
-                    <textarea id="userNotes" rows="3" class="block w-full p-3.5 border border-gray-300 rounded-lg bg-gray-50 focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500 text-base" placeholder="Gözlemleriniz, sorularınız..."></textarea>
+                <section class="mb-8 animated-section">
+                    <h2 class="text-2xl font-semibold text-gray-800 mb-3">Fotoğraf Önizleme</h2>
+                    <div id="imagePreviewContainer" class="image-preview-container rounded-lg ">
+                        <p id="imagePlaceholder" class="text-gray-500 w-full text-center text-lg">Lütfen bir veya daha fazla fotoğraf seçin.</p>
+                    </div>
                 </section>
-            </div>
-
-            <section class="text-center mb-8 space-x-4 animated-section">
-                <button id="analyzeButton" class="button-primary font-semibold py-3 px-8 rounded-lg shadow-md text-lg disabled:opacity-50 disabled:cursor-not-allowed" disabled>
-                    Analiz Et
-                </button>
-                <button id="clearButton" class="button-secondary font-semibold py-3 px-8 rounded-lg shadow-md text-lg">
-                    Temizle
-                </button>
-            </section>
-
-            <div id="loader" class="loader hidden"></div>
-
-            <section id="resultsSection" class="hidden mt-10 p-6 bg-green-50 rounded-lg shadow-md border border-green-200 animated-section">
-                <h2 class="text-3xl font-semibold text-green-700 mb-5">🔍 Analiz Sonuçları:</h2>
-                <div id="analysisResult" class="p-5 border border-gray-200 rounded-lg bg-white min-h-[150px] whitespace-pre-wrap shadow-inner text-gray-700 leading-relaxed">
-                    <!-- Yapay zeka cevabı buraya gelecek -->
+                <div class="grid md:grid-cols-2 gap-8 mb-8">
+                    <section class="p-6 bg-white rounded-lg shadow-sm border border-gray-200 animated-section">
+                        <label for="analysisType" class="block text-lg font-medium text-gray-800 mb-2">Analiz Türü Seçin:</label>
+                        <select id="analysisType" class="block w-full p-3.5 border border-gray-300 rounded-lg bg-gray-50 focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500 text-base">
+                            <option value="hastalik_zararli_tespiti">Hastalık ve Zararlı Tespiti</option>
+                            <option value="besin_eksikligi">Besin Eksikliği Analizi</option>
+                            <option value="gelisim_takibi">Genel Gelişim Takibi</option>
+                            <option value="sulama_onerisi_genel">Genel Sulama Önerisi (Bitki Türüne Göre)</option>
+                            <option value="toprak_yorumu">Toprak Görünümü Yorumlama (Fotoğraftan)</option>
+                            <option value="genel_analiz">Genel Bitki Sağlığı Analizi (Kapsamlı)</option>
+                        </select>
+                    </section>
+                    <section class="p-6 bg-white rounded-lg shadow-sm border border-gray-200 animated-section">
+                        <label for="userNotes" class="block text-lg font-medium text-gray-800 mb-2">Ek Notlar veya Sorularınız (İsteğe Bağlı):</label>
+                        <textarea id="userNotes" rows="3" class="block w-full p-3.5 border border-gray-300 rounded-lg bg-gray-50 focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500 text-base" placeholder="Gözlemleriniz, sorularınız..."></textarea>
+                    </section>
                 </div>
-            </section>
-        </main>
-    </div>
+                <section class="text-center mb-8 space-x-4 animated-section">
+                    <button id="analyzeButton" class="button-primary font-semibold py-3 px-8 rounded-lg shadow-md text-lg disabled:opacity-50 disabled:cursor-not-allowed" disabled>
+                        Analiz Et
+                    </button>
+                    <button id="clearButton" class="button-secondary font-semibold py-3 px-8 rounded-lg shadow-md text-lg">
+                        Temizle
+                    </button>
+                </section>
+                <div id="loader" class="loader hidden"></div>
+                <section id="resultsSection" class="hidden mt-10 p-6 bg-green-50 rounded-lg shadow-md border border-green-200 animated-section">
+                    <h2 class="text-3xl font-semibold text-green-700 mb-5">🔍 Analiz Sonuçları:</h2>
+                    <div id="analysisResult" class="p-5 border border-gray-200 rounded-lg bg-white min-h-[150px] whitespace-pre-wrap shadow-inner text-gray-700 leading-relaxed">
+                        <!-- Yapay zeka cevabı buraya gelecek -->
+                    </div>
+                </section>
+            </main>
+        </section>
+
+        <!-- Sulama Önerileri (Hava Durumu Destekli) Bölümü -->
+        <section id="sulamaOnerileriSection" class="page-section">
+            <header class="text-center mb-10 animated-section">
+                <h1 class="text-4xl font-bold app-title">💧 Konuma Dayalı Sulama Önerileri</h1>
+                <p class="text-gray-700 mt-3 text-lg">Anlık hava durumu verilerine göre akıllı sulama tavsiyeleri alın.</p>
+            </header>
+            <main class="animated-section">
+                <div class="text-center mb-6">
+                    <button id="getWeatherButton" class="button-primary font-semibold py-3 px-8 rounded-lg shadow-md text-lg">
+                        <i class="fas fa-map-marker-alt mr-2"></i>Konumumu Kullanarak Hava Durumunu Al
+                    </button>
+                </div>
+                <div id="weatherLoader" class="loader hidden"></div>
+                <div id="weatherResults" class="hidden">
+                    <div id="weatherInfoCard" class="weather-card mb-6 text-center">
+                        <h2 class="text-2xl font-semibold mb-2">📍 <span id="locationCity">Konumunuz</span> İçin Hava Durumu</h2>
+                        <div id="weatherIcon" class="weather-icon"></div>
+                        <p class="text-4xl font-bold"><span id="temperature">--</span>°C</p>
+                        <p class="text-xl capitalize" id="weatherDescription">--</p>
+                        <div class="grid grid-cols-2 sm:grid-cols-3 gap-4 mt-4 text-lg">
+                            <div><i class="fas fa-tint mr-1"></i> Nem: <span id="humidity">--</span>%</div>
+                            <div><i class="fas fa-cloud-showers-heavy mr-1"></i> Yağış (1s): <span id="precipitation">--</span> mm</div>
+                            <div><i class="fas fa-wind mr-1"></i> Rüzgar: <span id="windSpeed">--</span> km/s</div>
+                        </div>
+                    </div>
+                    <div id="irrigationAdvice" class="p-5 border border-green-200 rounded-lg bg-green-50 min-h-[100px] text-green-800 text-lg leading-relaxed shadow">
+                        <!-- Sulama önerisi buraya gelecek -->
+                    </div>
+                </div>
+            </main>
+        </section>
+
+        <!-- Hakkımızda Bölümü -->
+        <section id="hakkimizdaSection" class="page-section">
+            <header class="text-center mb-10 animated-section">
+                <h1 class="text-4xl font-bold app-title"> Hakkımızda</h1>
+                <p class="text-gray-700 mt-3 text-lg">AI Tarım: Tarımda teknolojinin gücüyle verimliliği arttırmayı hedefler.</p>
+            </header>
+            <main class="animated-section text-gray-700 leading-relaxed space-y-4 text-lg p-4">
+                <p>AI Tarım, çiftçilerimizin ve tarım meraklılarının bitki sağlığı konusunda bilinçli kararlar almasına yardımcı olmak amacıyla geliştirilmiş modern bir web uygulamasıdır. Yapay zeka teknolojilerini kullanarak, bitki fotoğraflarınız üzerinden hastalık, zararlı ve besin eksikliği gibi sorunları tespit etmeyi hedefler.</p>
+                <p>Misyonumuz, sürdürülebilir tarım pratiklerini destekleyerek, kaynakların daha verimli kullanılmasını sağlamak ve tarımsal üretimi artırmaktır. Kullanıcı dostu arayüzümüz ve anlaşılır analiz sonuçlarımızla, her seviyeden kullanıcının teknolojiden en iyi şekilde faydalanmasını amaçlıyoruz.</p>
+                <h2 class="text-2xl font-semibold text-green-600 pt-4">Neler Sunuyoruz?</h2>
+                <ul class="list-disc list-inside space-y-2 pl-4">
+                    <li>Yapay zeka destekli bitki hastalığı ve zararlı tespiti.</li>
+                    <li>Bitkilerdeki besin eksikliklerinin analizi.</li>
+                    <li>Genel bitki gelişim takibi ve öneriler.</li>
+                    <li>Konuma dayalı hava durumu verileriyle akıllı sulama tavsiyeleri.</li>
+                    <li>Kullanıcıların ekleyebileceği notlar ve sorularla kişiselleştirilmiş analizler.</li>
+                </ul>
+                <p>Gelişen teknolojiyi tarımla buluşturarak, geleceğin tarımına bugünden katkıda bulunmayı hedefliyoruz. Geri bildirimleriniz ve önerileriniz bizim için değerlidir.</p>
+</p>e-Mail :ozkanahmet@protonmail.com</p>
+</p>Created by Ahmet Özkan with AI </p>
+            </main>
+        </section>
+
+        <!-- İletişim Bölümü -->
+        <section id="iletisimSection" class="page-section">
+            <header class="text-center mb-10 animated-section">
+                <h1 class="text-4xl font-bold app-title">📧 İletişim</h1>
+                <p class="text-gray-700 mt-3 text-lg">Görüş, öneri ve sorularınız için bize ulaşın.</p>
+            </header>
+            <main class="animated-section p-4">
+                <form id="contactForm" class="space-y-6 max-w-lg mx-auto bg-white p-8 rounded-lg shadow-md border border-gray-200">
+                    <div>
+                        <label for="contactName" class="block text-lg font-medium text-gray-800 mb-1">Adınız Soyadınız:</label>
+                        <input type="text" id="contactName" name="contactName" class="block w-full p-3 border border-gray-300 rounded-lg bg-gray-50 focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500 text-base" required>
+                    </div>
+                    <div>
+                        <label for="contactEmail" class="block text-lg font-medium text-gray-800 mb-1">E-posta Adresiniz:</label>
+                        <input type="email" id="contactEmail" name="contactEmail" class="block w-full p-3 border border-gray-300 rounded-lg bg-gray-50 focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500 text-base" required>
+                    </div>
+                    <div>
+                        <label for="contactSubject" class="block text-lg font-medium text-gray-800 mb-1">Konu:</label>
+                        <input type="text" id="contactSubject" name="contactSubject" class="block w-full p-3 border border-gray-300 rounded-lg bg-gray-50 focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500 text-base" required>
+                    </div>
+                    <div>
+                        <label for="contactMessage" class="block text-lg font-medium text-gray-800 mb-1">Mesajınız:</label>
+                        <textarea id="contactMessage" name="contactMessage" rows="5" class="block w-full p-3 border border-gray-300 rounded-lg bg-gray-50 focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500 text-base" required></textarea>
+                    </div>
+                    <div class="text-center">
+                        <button type="submit" class="button-primary font-semibold py-3 px-8 rounded-lg shadow-md text-lg">
+                            Gönder
+                        </button>
+                    </div>
+                </form>
+            </main>
+        </section>
+
+    </div> <!-- .container-main sonu -->
 
     <div id="infoModal" class="modal">
         <div class="modal-content">
@@ -259,7 +359,69 @@
         const modalMessage = document.getElementById('modalMessage');
         const modalCloseButton = document.getElementById('modalClose');
 
+        // Sayfa navigasyon elementleri
+        const navLinksContainer = document.getElementById('navLinks');
+        const pageSections = document.querySelectorAll('.page-section');
+
+        // Hava durumu elementleri
+        const getWeatherButton = document.getElementById('getWeatherButton');
+        const weatherLoader = document.getElementById('weatherLoader');
+        const weatherResultsDiv = document.getElementById('weatherResults');
+        const locationCitySpan = document.getElementById('locationCity');
+        const weatherIconDiv = document.getElementById('weatherIcon');
+        const temperatureSpan = document.getElementById('temperature');
+        const weatherDescriptionSpan = document.getElementById('weatherDescription');
+        const humiditySpan = document.getElementById('humidity');
+        const precipitationSpan = document.getElementById('precipitation');
+        const windSpeedSpan = document.getElementById('windSpeed');
+        const irrigationAdviceDiv = document.getElementById('irrigationAdvice');
+
+        // İletişim formu
+        const contactForm = document.getElementById('contactForm');
+
+
         let imageFilesData = [];
+
+        // Sayfa navigasyon fonksiyonu
+        function showPage(pageId) {
+            pageSections.forEach(section => {
+                section.classList.remove('active');
+                section.classList.remove('visible'); // Animasyon için
+            });
+            const activePage = document.getElementById(pageId);
+            if (activePage) {
+                activePage.classList.add('active');
+                // Animasyonları tetiklemek için küçük bir gecikme
+                setTimeout(() => {
+                    const animatedSections = activePage.querySelectorAll('.animated-section');
+                    animatedSections.forEach((section, index) => {
+                        setTimeout(() => {
+                            section.classList.add('visible');
+                        }, index * 100); // Daha hızlı sıralı animasyon
+                    });
+                }, 50);
+            }
+
+            // Aktif link stilini ayarla
+            navLinksContainer.querySelectorAll('.nav-link').forEach(link => {
+                link.classList.remove('active-link');
+                if (link.dataset.page === pageId) {
+                    link.classList.add('active-link');
+                }
+            });
+            window.location.hash = pageId.replace('Section', ''); // URL hash'ini güncelle
+        }
+
+        navLinksContainer.addEventListener('click', function(event) {
+            if (event.target.matches('.nav-link')) {
+                event.preventDefault();
+                const pageId = event.target.dataset.page;
+                if (pageId) {
+                    showPage(pageId);
+                }
+            }
+        });
+
 
         function showModal(title, message, isError = false) {
             modalTitle.textContent = title;
@@ -271,7 +433,7 @@
                 modalTitle.classList.add('text-green-700');
             }
             infoModal.style.display = 'flex';
-            setTimeout(() => { // Aktivasyon için kısa bir gecikme
+            setTimeout(() => {
                 infoModal.classList.add('active');
             }, 10);
         }
@@ -280,7 +442,7 @@
             infoModal.classList.remove('active');
             setTimeout(() => {
                 infoModal.style.display = 'none';
-            }, 300); // CSS transition süresiyle eşleşmeli
+            }, 300);
         }
 
         modalCloseButton.onclick = closeModal;
@@ -291,270 +453,376 @@
         }
 
         function resetForm() {
-            plantImagesInput.value = '';
+            if(plantImagesInput) plantImagesInput.value = '';
             imageFilesData = [];
-            imagePreviewContainer.innerHTML = '';
-            imagePreviewContainer.appendChild(imagePlaceholder);
-            imagePlaceholder.classList.remove('hidden');
-            userNotesInput.value = '';
-            analysisTypeSelect.selectedIndex = 0;
-            analyzeButton.disabled = true;
-            resultsSection.classList.add('hidden');
-            resultsSection.classList.remove('visible'); // Animasyon için
-            analysisResultDiv.textContent = '';
-            loader.classList.add('hidden');
+            if(imagePreviewContainer) imagePreviewContainer.innerHTML = '';
+            if(imagePreviewContainer && imagePlaceholder) imagePreviewContainer.appendChild(imagePlaceholder);
+            if(imagePlaceholder) imagePlaceholder.classList.remove('hidden');
+            if(userNotesInput) userNotesInput.value = '';
+            if(analysisTypeSelect) analysisTypeSelect.selectedIndex = 0;
+            if(analyzeButton) analyzeButton.disabled = true;
+            if(resultsSection) {
+                resultsSection.classList.add('hidden');
+                resultsSection.classList.remove('visible');
+            }
+            if(analysisResultDiv) analysisResultDiv.textContent = '';
+            if(loader) loader.classList.add('hidden');
         }
 
-        clearButton.addEventListener('click', resetForm);
+       if(clearButton) clearButton.addEventListener('click', resetForm);
 
-        plantImagesInput.addEventListener('change', function(event) {
-            const files = event.target.files;
-            imageFilesData = [];
-            imagePreviewContainer.innerHTML = '';
+       if(plantImagesInput) {
+            plantImagesInput.addEventListener('change', function(event) {
+                const files = event.target.files;
+                imageFilesData = [];
+                imagePreviewContainer.innerHTML = '';
 
-            if (files.length === 0) {
-                imagePreviewContainer.appendChild(imagePlaceholder);
-                imagePlaceholder.classList.remove('hidden');
+                if (files.length === 0) {
+                    imagePreviewContainer.appendChild(imagePlaceholder);
+                    imagePlaceholder.classList.remove('hidden');
+                    analyzeButton.disabled = true;
+                    return;
+                }
+
+                imagePlaceholder.classList.add('hidden');
+                let validFilesExist = false;
+                let filesProcessed = 0;
+
+                Array.from(files).forEach(file => {
+                    if (file.size > 5 * 1024 * 1024) {
+                        showModal('Hata', `'${file.name}' adlı dosya çok büyük (Max 5MB).`, true);
+                        filesProcessed++;
+                        if (filesProcessed === files.length) {
+                            analyzeButton.disabled = imageFilesData.length === 0;
+                        }
+                        return;
+                    }
+                    if (!['image/jpeg', 'image/png'].includes(file.type)) {
+                        showModal('Hata', `'${file.name}' geçersiz dosya tipi (Sadece JPEG/PNG).`, true);
+                        filesProcessed++;
+                         if (filesProcessed === files.length) {
+                            analyzeButton.disabled = imageFilesData.length === 0;
+                        }
+                        return;
+                    }
+
+                    validFilesExist = true;
+                    const reader = new FileReader();
+                    reader.onload = function(e) {
+                        imageFilesData.push({
+                            data: e.target.result.split(',')[1],
+                            mimeType: file.type,
+                            name: file.name
+                        });
+
+                        const imgElement = document.createElement('img');
+                        imgElement.src = e.target.result;
+                        imgElement.alt = `Önizleme: ${file.name}`;
+                        imgElement.classList.add('preview-image-item');
+                        imagePreviewContainer.appendChild(imgElement);
+
+                        filesProcessed++;
+                        if (filesProcessed === files.length) {
+                             analyzeButton.disabled = imageFilesData.length === 0;
+                        }
+                    }
+                    reader.onerror = function() {
+                        showModal('Hata', `'${file.name}' okunurken bir hata oluştu.`, true);
+                        filesProcessed++;
+                        if (filesProcessed === files.length) {
+                            analyzeButton.disabled = imageFilesData.length === 0;
+                        }
+                    }
+                    reader.readAsDataURL(file);
+                });
+
+                if (files.length > 0 && !validFilesExist && filesProcessed === files.length) {
+                     imagePreviewContainer.appendChild(imagePlaceholder);
+                     imagePlaceholder.classList.remove('hidden');
+                     analyzeButton.disabled = true;
+                } else if (files.length === 0) {
+                     analyzeButton.disabled = true;
+                }
+            });
+        }
+
+        if(analyzeButton) {
+            analyzeButton.addEventListener('click', async function() {
+                if (imageFilesData.length === 0) {
+                    showModal('Uyarı', 'Lütfen önce analiz için en az bir fotoğraf seçin.', true);
+                    return;
+                }
+
+                loader.classList.remove('hidden');
+                resultsSection.classList.add('hidden');
+                resultsSection.classList.remove('visible');
+                analysisResultDiv.textContent = '';
                 analyzeButton.disabled = true;
-                return;
-            }
+                clearButton.disabled = true;
 
-            imagePlaceholder.classList.add('hidden');
-            let validFilesExist = false;
-            let filesProcessed = 0;
+                const notes = userNotesInput.value.trim();
+                const analysisType = analysisTypeSelect.value;
+                const analysisTypeFriendlyName = analysisTypeSelect.options[analysisTypeSelect.selectedIndex].text;
 
-            Array.from(files).forEach(file => {
-                if (file.size > 5 * 1024 * 1024) {
-                    showModal('Hata', `'${file.name}' adlı dosya çok büyük (Max 5MB).`, true);
-                    filesProcessed++;
-                    if (filesProcessed === files.length) {
-                        analyzeButton.disabled = imageFilesData.length === 0;
-                    }
-                    return;
+                let promptText = `Bu bitki fotoğraf(lar)ını analiz et. Seçilen analiz türü: "${analysisTypeFriendlyName}".\n`;
+                promptText += `Kullanıcının ek notları/soruları: "${notes || 'Yok'}".\n\n`;
+                 switch(analysisType) {
+                    case "hastalik_zararli_tespiti":
+                        promptText += "Bitki(ler)de herhangi bir hastalık belirtisi, mantar, böcek veya zararlı varlığı görünüyor mu? Varsa, olası teşhisler nelerdir? Detaylı bir açıklama ve öncelikli olarak biyolojik/organik mücadele yöntemleri dahil çözüm önerileri sun.";
+                        break;
+                    case "besin_eksikligi":
+                        promptText += "Bitki(ler)deki yaprak rengi, şekli, duruşu ve genel görünüme bakarak olası besin eksikliklerini (örneğin Azot, Fosfor, Potasyum, Magnezyum, Demir vb.) analiz et. Belirtileri, eksikliğin olası nedenlerini ve organik gübreleme/besin takviyesi önerilerini detaylandır.";
+                        break;
+                    case "gelisim_takibi":
+                        promptText += "Bitki(ler)nin genel sağlık ve gelişim durumunu (büyüme hızı, yaprak yoğunluğu, gövde canlılığı vb.) değerlendir. Gelişimi iyileştirmek için genel ve pratik tavsiyeler sun.";
+                        break;
+                    case "sulama_onerisi_genel":
+                        promptText += "Bitki(ler)nin türüne ve genel görünümüne göre sulama ihtiyaçları hakkında genel önerilerde bulun. Toprak nemi, bitkinin gelişim evresi gibi faktörleri de dikkate alarak tavsiyeler ver.";
+                        break;
+                    case "toprak_yorumu":
+                        promptText += "Eğer fotoğraflarda toprak net bir şekilde görünüyorsa, toprağın rengi, yapısı (kumlu, killi, tınlı vb. olası çıkarımlar) ve yüzeydeki organik madde belirtileri hakkında yorum yap. Toprak kalitesini iyileştirmek için genel ve organik yöntemler öner. Bu analizin sadece görsel bir yorum olduğunu, kesin sonuçlar için laboratuvar analizi gerektiğini belirt.";
+                        break;
+                    case "genel_analiz":
+                        promptText += "Bitki(ler)nin genel sağlık durumunu kapsamlı bir şekilde analiz et. Olası hastalık, zararlı, besin eksikliği veya gelişim sorunlarına değin. Her bir tespit için kısa açıklamalar ve çözüm önerileri sun. Genel bakım tavsiyeleri ver.";
+                        break;
+                    default:
+                        promptText += "Lütfen yüklenen görsellerdeki bitkileri genel tarımsal prensipler çerçevesinde değerlendir ve gözlemlerini paylaş.";
                 }
-                if (!['image/jpeg', 'image/png'].includes(file.type)) {
-                    showModal('Hata', `'${file.name}' geçersiz dosya tipi (Sadece JPEG/PNG).`, true);
-                    filesProcessed++;
-                     if (filesProcessed === files.length) {
-                        analyzeButton.disabled = imageFilesData.length === 0;
-                    }
-                    return;
-                }
+                promptText += "\n\nAnalizini net, anlaşılır ve maddeler halinde sunmaya çalış. Birden fazla fotoğraf varsa, her birini dikkate alarak genel bir değerlendirme yap veya önemli farklılıklar varsa belirt.";
 
-                validFilesExist = true;
-                const reader = new FileReader();
-                reader.onload = function(e) {
-                    imageFilesData.push({
-                        data: e.target.result.split(',')[1],
-                        mimeType: file.type,
-                        name: file.name
+                const parts = [{ text: promptText }];
+                imageFilesData.forEach(imgData => {
+                    parts.push({
+                        inlineData: {
+                            mimeType: imgData.mimeType,
+                            data: imgData.data
+                        }
+                    });
+                });
+
+                const payload = { contents: [{ role: "user", parts: parts }] };
+                const apiKey = "AIzaSyDkgRnTa9UqOlFEtUqhkAAs5XkI-IfDfcY"; // KULLANICI BURAYA KENDİ API ANAHTARINI GİRMELİDİR
+                const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`;
+
+                try {
+                    const response = await fetch(apiUrl, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(payload)
                     });
 
-                    const imgElement = document.createElement('img');
-                    imgElement.src = e.target.result;
-                    imgElement.alt = `Önizleme: ${file.name}`;
-                    imgElement.classList.add('preview-image-item'); // Animasyon class'ı CSS'de tanımlı
-                    imagePreviewContainer.appendChild(imgElement);
+                    if (!response.ok) {
+                        const errorStatus = response.status;
+                        let errorResponseMessage = `API'den hata alındı: ${errorStatus}`;
+                        let modalErrorMessage = `API'den ${errorStatus} durum kodu ile bir hata alındı.`;
 
-                    filesProcessed++;
-                    if (filesProcessed === files.length) {
-                         analyzeButton.disabled = imageFilesData.length === 0;
-                    }
-                }
-                reader.onerror = function() {
-                    showModal('Hata', `'${file.name}' okunurken bir hata oluştu.`, true);
-                    filesProcessed++;
-                    if (filesProcessed === files.length) {
-                        analyzeButton.disabled = imageFilesData.length === 0;
-                    }
-                }
-                reader.readAsDataURL(file);
-            });
-
-            if (files.length > 0 && !validFilesExist && filesProcessed === files.length) {
-                 imagePreviewContainer.appendChild(imagePlaceholder);
-                 imagePlaceholder.classList.remove('hidden');
-                 analyzeButton.disabled = true;
-            } else if (files.length === 0) {
-                 analyzeButton.disabled = true;
-            }
-        });
-
-        analyzeButton.addEventListener('click', async function() {
-            if (imageFilesData.length === 0) {
-                showModal('Uyarı', 'Lütfen önce analiz için en az bir fotoğraf seçin.', true);
-                return;
-            }
-
-            loader.classList.remove('hidden');
-            resultsSection.classList.add('hidden');
-            resultsSection.classList.remove('visible');
-            analysisResultDiv.textContent = '';
-            analyzeButton.disabled = true;
-            clearButton.disabled = true;
-
-            const notes = userNotesInput.value.trim();
-            const analysisType = analysisTypeSelect.value;
-            const analysisTypeFriendlyName = analysisTypeSelect.options[analysisTypeSelect.selectedIndex].text;
-
-            let promptText = `Bu bitki fotoğraf(lar)ını analiz et. Seçilen analiz türü: "${analysisTypeFriendlyName}".\n`;
-            promptText += `Kullanıcının ek notları/soruları: "${notes || 'Yok'}".\n\n`;
-            // ... (switch case for promptText remains the same)
-             switch(analysisType) {
-                case "hastalik_zararli_tespiti":
-                    promptText += "Bitki(ler)de herhangi bir hastalık belirtisi, mantar, böcek veya zararlı varlığı görünüyor mu? Varsa, olası teşhisler nelerdir? Detaylı bir açıklama ve öncelikli olarak biyolojik/organik mücadele yöntemleri dahil çözüm önerileri sun.";
-                    break;
-                case "besin_eksikligi":
-                    promptText += "Bitki(ler)deki yaprak rengi, şekli, duruşu ve genel görünüme bakarak olası besin eksikliklerini (örneğin Azot, Fosfor, Potasyum, Magnezyum, Demir vb.) analiz et. Belirtileri, eksikliğin olası nedenlerini ve organik gübreleme/besin takviyesi önerilerini detaylandır.";
-                    break;
-                case "gelisim_takibi":
-                    promptText += "Bitki(ler)nin genel sağlık ve gelişim durumunu (büyüme hızı, yaprak yoğunluğu, gövde canlılığı vb.) değerlendir. Gelişimi iyileştirmek için genel ve pratik tavsiyeler sun.";
-                    break;
-                case "sulama_onerisi":
-                    promptText += "Bitki(ler)nin ve eğer görünüyorsa toprağın görünümüne bakarak sulama ihtiyacını değerlendir. Bitki(ler) susuzluk veya aşırı sulama belirtileri gösteriyor mu? Toprak nem durumu hakkında bir çıkarım yapılabilir mi? Sulama sıklığı, miktarı ve tekniği konusunda genel öneriler sun.";
-                    break;
-                case "toprak_yorumu":
-                    promptText += "Eğer fotoğraflarda toprak net bir şekilde görünüyorsa, toprağın rengi, yapısı (kumlu, killi, tınlı vb. olası çıkarımlar) ve yüzeydeki organik madde belirtileri hakkında yorum yap. Toprak kalitesini iyileştirmek için genel ve organik yöntemler öner. Bu analizin sadece görsel bir yorum olduğunu, kesin sonuçlar için laboratuvar analizi gerektiğini belirt.";
-                    break;
-                case "genel_analiz":
-                    promptText += "Bitki(ler)nin genel sağlık durumunu kapsamlı bir şekilde analiz et. Olası hastalık, zararlı, besin eksikliği veya gelişim sorunlarına değin. Her bir tespit için kısa açıklamalar ve çözüm önerileri sun. Genel bakım tavsiyeleri ver.";
-                    break;
-                default:
-                    promptText += "Lütfen yüklenen görsellerdeki bitkileri genel tarımsal prensipler çerçevesinde değerlendir ve gözlemlerini paylaş.";
-            }
-            promptText += "\n\nAnalizini net, anlaşılır ve maddeler halinde sunmaya çalış. Birden fazla fotoğraf varsa, her birini dikkate alarak genel bir değerlendirme yap veya önemli farklılıklar varsa belirt.";
-
-
-            const parts = [{ text: promptText }];
-            imageFilesData.forEach(imgData => {
-                parts.push({
-                    inlineData: {
-                        mimeType: imgData.mimeType,
-                        data: imgData.data
-                    }
-                });
-            });
-
-            const payload = { contents: [{ role: "user", parts: parts }] };
-            const apiKey = "AIzaSyDkgRnTa9UqOlFEtUqhkAAs5XkI-IfDfcY"; // Canvas ortamında otomatik sağlanır veya kullanıcı kendi anahtarını girmelidir.
-            const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`;
-
-            try {
-                const response = await fetch(apiUrl, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(payload)
-                });
-
-                if (!response.ok) {
-                    // ... (Error handling remains the same)
-                    const errorStatus = response.status;
-                    let errorResponseMessage = `API'den hata alındı: ${errorStatus}`;
-                    let modalErrorMessage = `API'den ${errorStatus} durum kodu ile bir hata alındı.`;
-
-                    if (errorStatus === 401) {
-                        modalErrorMessage = "API Yetkilendirme Hatası (401): Servise erişim için geçerli kimlik bilgileri sağlanamadı. Lütfen API anahtarınızın doğru yapılandırıldığından veya ortamınızın API erişimine izin verdiğinden emin olun. Eğer bu uygulamayı kendi bilgisayarınızda çalıştırıyorsanız, kod içerisindeki 'apiKey' değişkenine geçerli bir Google AI Studio API anahtarı girmeniz gerekmektedir.";
-                        errorResponseMessage += " - Yetkilendirme Hatası.";
-                    } else if (errorStatus === 403) {
-                         modalErrorMessage = "API Erişim Reddi (403): API'ye erişiminiz reddedildi. Bu, API anahtarınızın yanlış olması, gerekli API'nin etkinleştirilmemiş olması veya başka bir izin sorunu nedeniyle olabilir. Lütfen Google Cloud Console veya AI Studio ayarlarınızı kontrol edin. Eğer bu uygulamayı kendi bilgisayarınızda çalıştırıyorsanız, kod içerisindeki 'apiKey' değişkenine geçerli bir Google AI Studio API anahtarı girmeniz gerekmektedir.";
-                        errorResponseMessage += " - Erişim Reddi.";
-                    }
-
-
-                    try {
-                        const errorBody = await response.text();
-                        if (errorBody) {
-                            try {
-                                const errorData = JSON.parse(errorBody);
-                                if (errorData && errorData.error && errorData.error.message) {
-                                    errorResponseMessage += ` - ${errorData.error.message}`;
-                                    if (errorStatus !== 401 && errorStatus !== 403) modalErrorMessage += ` Detay: ${errorData.error.message}`;
-                                } else {
-                                    errorResponseMessage += ` - Yanıt: ${errorBody.substring(0, 200)}${errorBody.length > 200 ? '...' : ''}`;
-                                    if (errorStatus !== 401 && errorStatus !== 403) modalErrorMessage += ` Sunucu yanıtı: ${errorBody.substring(0,100)}...`;
-                                }
-                                console.error('API Hata Detayı (JSON):', errorData);
-                            } catch (e) {
-                                errorResponseMessage += ` - Yanıt: ${errorBody.substring(0, 200)}${errorBody.length > 200 ? '...' : ''}`;
-                                if (errorStatus !== 401 && errorStatus !== 403) modalErrorMessage += ` Sunucu yanıtı (JSON değil): ${errorBody.substring(0,100)}...`;
-                                console.error('API Hata Metni (JSON değil):', errorBody);
-                            }
-                        } else {
-                            errorResponseMessage += " - Sunucudan boş hata yanıtı alındı.";
-                            if (errorStatus !== 401 && errorStatus !== 403) modalErrorMessage += " Sunucudan boş yanıt alındı.";
-                            console.error('API Hata: Sunucudan boş yanıt alındı.');
+                        if (errorStatus === 401 || errorStatus === 403) {
+                             modalErrorMessage = `API Yetkilendirme/Erişim Hatası (${errorStatus}): Servise erişim için geçerli kimlik bilgileri sağlanamadı veya erişiminiz reddedildi. Lütfen API anahtarınızın doğru yapılandırıldığından emin olun. Bu uygulamayı kendi bilgisayarınızda çalıştırıyorsanız, kod içerisindeki 'apiKey' değişkenine geçerli bir Google AI Studio API anahtarı girmeniz gerekmektedir.`;
+                            errorResponseMessage += errorStatus === 401 ? " - Yetkilendirme Hatası." : " - Erişim Reddi.";
                         }
-                    } catch (textError) {
-                        errorResponseMessage += " - Hata yanıtı okunamadı.";
-                        if (errorStatus !== 401 && errorStatus !== 403) modalErrorMessage += " Hata yanıtı sunucudan okunamadı.";
-                        console.error('API Hata: Hata yanıtı okunamadı', textError);
+
+                        try {
+                            const errorBody = await response.text();
+                            if (errorBody) {
+                                try {
+                                    const errorData = JSON.parse(errorBody);
+                                    if (errorData && errorData.error && errorData.error.message) {
+                                        errorResponseMessage += ` - ${errorData.error.message}`;
+                                        if (errorStatus !== 401 && errorStatus !== 403) modalErrorMessage += ` Detay: ${errorData.error.message}`;
+                                    } else {
+                                        if (errorStatus !== 401 && errorStatus !== 403) modalErrorMessage += ` Sunucu yanıtı: ${errorBody.substring(0,100)}...`;
+                                    }
+                                    console.error('API Hata Detayı (JSON):', errorData);
+                                } catch (e) {
+                                    if (errorStatus !== 401 && errorStatus !== 403) modalErrorMessage += ` Sunucu yanıtı (JSON değil): ${errorBody.substring(0,100)}...`;
+                                    console.error('API Hata Metni (JSON değil):', errorBody);
+                                }
+                            } else {
+                                if (errorStatus !== 401 && errorStatus !== 403) modalErrorMessage += " Sunucudan boş yanıt alındı.";
+                                console.error('API Hata: Sunucudan boş yanıt alındı.');
+                            }
+                        } catch (textError) {
+                            if (errorStatus !== 401 && errorStatus !== 403) modalErrorMessage += " Hata yanıtı sunucudan okunamadı.";
+                            console.error('API Hata: Hata yanıtı okunamadı', textError);
+                        }
+                        showModal('Analiz Hatası', modalErrorMessage, true);
+                        analysisResultDiv.textContent = `Bir hata oluştu: ${errorResponseMessage}. Lütfen konsolu kontrol edin.`;
+                        resultsSection.classList.remove('hidden');
+                        setTimeout(() => resultsSection.classList.add('visible'), 50);
+                        return;
                     }
-                    showModal('Analiz Hatası', modalErrorMessage, true);
-                    analysisResultDiv.textContent = `Bir hata oluştu: ${errorResponseMessage}. Lütfen konsolu kontrol edin.`;
+
+                    const result = await response.json();
+
+                    if (result.candidates && result.candidates.length > 0 &&
+                        result.candidates[0].content && result.candidates[0].content.parts &&
+                        result.candidates[0].content.parts.length > 0 &&
+                        result.candidates[0].content.parts[0].text) {
+                        const analysisText = result.candidates[0].content.parts[0].text;
+                        analysisResultDiv.textContent = analysisText;
+                        resultsSection.classList.remove('hidden');
+                        setTimeout(() => resultsSection.classList.add('visible'), 50);
+                        showModal('Analiz Tamamlandı', 'Bitki analiziniz başarıyla tamamlandı. Sonuçları aşağıda görebilirsiniz.', false);
+                    } else {
+                        console.error('API Yanıt Formatı Beklenmedik:', result);
+                         let detailedError = 'Yapay zekadan geçerli bir analiz alınamadı.';
+                        if (result.promptFeedback && result.promptFeedback.blockReason) {
+                            detailedError += ` Engelleme nedeni: ${result.promptFeedback.blockReason.reason || result.promptFeedback.blockReason}`;
+                        } else if (result.candidates && result.candidates.length > 0 && result.candidates[0].finishReason && result.candidates[0].finishReason !== 'STOP') {
+                             detailedError += ` Bitirme nedeni: ${result.candidates[0].finishReason}.`;
+                        }
+                        showModal('Analiz Hatası', detailedError, true);
+                        analysisResultDiv.textContent = detailedError;
+                        resultsSection.classList.remove('hidden');
+                         setTimeout(() => resultsSection.classList.add('visible'), 50);
+                    }
+                } catch (error) {
+                    console.error('Analiz sırasında genel hata:', error);
+                    if (infoModal.style.display !== 'flex' || !infoModal.classList.contains('active')) {
+                        showModal('Analiz Hatası', `Beklenmedik bir sorun oluştu: ${error.message}. Geliştirici konsolunu kontrol edin.`, true);
+                    }
+                    if (!analysisResultDiv.textContent) {
+                        analysisResultDiv.textContent = `Bir hata oluştu: ${error.message}.`;
+                    }
                     resultsSection.classList.remove('hidden');
                     setTimeout(() => resultsSection.classList.add('visible'), 50);
-                    return;
+                } finally {
+                    loader.classList.add('hidden');
+                    analyzeButton.disabled = imageFilesData.length === 0;
+                    clearButton.disabled = false;
                 }
-
-                const result = await response.json();
-
-                if (result.candidates && result.candidates.length > 0 &&
-                    result.candidates[0].content && result.candidates[0].content.parts &&
-                    result.candidates[0].content.parts.length > 0 &&
-                    result.candidates[0].content.parts[0].text) {
-                    const analysisText = result.candidates[0].content.parts[0].text;
-                    analysisResultDiv.textContent = analysisText;
-                    resultsSection.classList.remove('hidden');
-                    setTimeout(() => resultsSection.classList.add('visible'), 50); // Animasyon için
-                    showModal('Analiz Tamamlandı', 'Bitki analiziniz başarıyla tamamlandı. Sonuçları aşağıda görebilirsiniz.', false);
-                } else {
-                    // ... (Unexpected API response format handling remains the same)
-                    console.error('API Yanıt Formatı Beklenmedik:', result);
-                     let detailedError = 'Yapay zekadan geçerli bir analiz alınamadı.';
-                    if (result.promptFeedback && result.promptFeedback.blockReason) {
-                        detailedError += ` Engelleme nedeni: ${result.promptFeedback.blockReason.reason || result.promptFeedback.blockReason}`;
-                        if (result.promptFeedback.safetyRatings) {
-                             detailedError += ` Güvenlik değerlendirmeleri: ${JSON.stringify(result.promptFeedback.safetyRatings)}`;
-                        }
-                    } else if (result.candidates && result.candidates.length > 0 && result.candidates[0].finishReason && result.candidates[0].finishReason !== 'STOP') {
-                         detailedError += ` Bitirme nedeni: ${result.candidates[0].finishReason}.`;
-                         if (result.candidates[0].safetyRatings) {
-                            detailedError += ` Güvenlik değerlendirmeleri: ${JSON.stringify(result.candidates[0].safetyRatings)}`;
-                         }
-                    }
-                    showModal('Analiz Hatası', detailedError, true);
-                    analysisResultDiv.textContent = detailedError;
-                    resultsSection.classList.remove('hidden');
-                     setTimeout(() => resultsSection.classList.add('visible'), 50);
-                }
-
-            } catch (error) {
-                console.error('Analiz sırasında genel hata:', error);
-                if (infoModal.style.display !== 'flex' || !infoModal.classList.contains('active')) {
-                    showModal('Analiz Hatası', `Beklenmedik bir sorun oluştu: ${error.message}. Geliştirici konsolunu kontrol edin.`, true);
-                }
-                if (!analysisResultDiv.textContent) {
-                    analysisResultDiv.textContent = `Bir hata oluştu: ${error.message}.`;
-                }
-                resultsSection.classList.remove('hidden');
-                setTimeout(() => resultsSection.classList.add('visible'), 50);
-            } finally {
-                loader.classList.add('hidden');
-                analyzeButton.disabled = imageFilesData.length === 0;
-                clearButton.disabled = false;
-            }
-        });
-
-        // Sayfa yüklendiğinde animasyonları tetikle
-        document.addEventListener('DOMContentLoaded', () => {
-            resetForm();
-            const sections = document.querySelectorAll('.animated-section');
-            sections.forEach((section, index) => {
-                // Her bir bölüm için gecikmeli olarak 'visible' class'ını ekle
-                setTimeout(() => {
-                    section.classList.add('visible');
-                }, index * 150); // 150ms aralıklarla
             });
+        }
+
+        // Hava durumu fonksiyonları
+        function getWeatherIcon(weatherCode) {
+            // Basit ikon eşleştirmesi (Open-Meteo WMO kodlarına göre)
+            // Detaylı: https://open-meteo.com/en/docs#weathervariables
+            if (weatherCode === 0) return '<i class="fas fa-sun"></i>'; // Clear sky
+            if (weatherCode >= 1 && weatherCode <= 3) return '<i class="fas fa-cloud-sun"></i>'; // Mainly clear, partly cloudy, overcast
+            if (weatherCode === 45 || weatherCode === 48) return '<i class="fas fa-smog"></i>'; // Fog
+            if (weatherCode >= 51 && weatherCode <= 57) return '<i class="fas fa-cloud-rain"></i>'; // Drizzle
+            if (weatherCode >= 61 && weatherCode <= 67) return '<i class="fas fa-cloud-showers-heavy"></i>'; // Rain
+            if (weatherCode >= 71 && weatherCode <= 77) return '<i class="fas fa-snowflake"></i>'; // Snow fall
+            if (weatherCode >= 80 && weatherCode <= 82) return '<i class="fas fa-cloud-sun-rain"></i>'; // Rain showers
+            if (weatherCode >= 95 && weatherCode <= 99) return '<i class="fas fa-bolt"></i>'; // Thunderstorm
+            return '<i class="fas fa-cloud"></i>'; // Default
+        }
+
+        function getWeatherDescriptionText(weatherCode) {
+            const descriptions = {
+                0: "Açık Hava", 1: "Genellikle Açık", 2: "Parçalı Bulutlu", 3: "Çok Bulutlu",
+                45: "Sisli", 48: "Kırağı Sisi",
+                51: "Hafif Çisenti", 53: "Orta Şiddette Çisenti", 55: "Yoğun Çisenti",
+                56: "Hafif Donan Çisenti", 57: "Yoğun Donan Çisenti",
+                61: "Hafif Yağmurlu", 63: "Orta Şiddette Yağmurlu", 65: "Şiddetli Yağmurlu",
+                66: "Hafif Donan Yağmur", 67: "Orta veya Şiddetli Donan Yağmur",
+                71: "Hafif Kar Yağışlı", 73: "Orta Şiddette Kar Yağışlı", 75: "Yoğun Kar Yağışlı",
+                77: "Kar Taneleri",
+                80: "Hafif Sağanak Yağmurlu", 81: "Orta Şiddette Sağanak Yağmurlu", 82: "Şiddetli Sağanak Yağmurlu",
+                85: "Hafif Kar Sağanakları", 86: "Şiddetli Kar Sağanakları",
+                95: "Gök Gürültülü Fırtına", 96: "Hafif Dolu ile Gök Gürültülü Fırtına", 99: "Şiddetli Dolu ile Gök Gürültülü Fırtına"
+            };
+            return descriptions[weatherCode] || "Bilinmiyor";
+        }
+
+
+        function generateIrrigationAdvice(temp, precip, humidity) {
+            let advice = "Sulama Önerisi:\n";
+            if (precip > 1) { // 1mm'den fazla yağış varsa
+                advice += `💧 Son 1 saatte ${precip} mm yağış olmuş. Toprak yeterince nemli olabilir, sulamayı erteleyebilirsiniz.`;
+            } else if (temp > 30 && humidity < 40) {
+                advice += `☀️ Hava sıcak (${temp}°C) ve nem düşük (%${humidity}). Bitkilerinizin suya ihtiyacı olabilir. Toprağı kontrol ederek sulama yapın.`;
+            } else if (temp > 25) {
+                advice += `🌡️ Hava sıcaklığı ${temp}°C. Bitkilerinizin su ihtiyacını gözlemleyin.`;
+            } else if (humidity > 70) {
+                advice += `💨 Nem oranı yüksek (%${humidity}). Aşırı sulamadan kaçının, mantar hastalıklarına dikkat edin.`;
+            } else {
+                advice += `☁️ Hava durumu genel olarak stabil görünüyor. Bitkilerinizin türüne ve toprağın nem durumuna göre standart sulama rutininize devam edebilirsiniz.`;
+            }
+            advice += "\n\nUnutmayın: Bu sadece genel bir tahmindir. En doğru sulama kararı için bitkinizin türünü, toprağın nemini ve bitkinin genel durumunu göz önünde bulundurun."
+            return advice;
+        }
+
+        if(getWeatherButton) {
+            getWeatherButton.addEventListener('click', function() {
+                if (navigator.geolocation) {
+                    weatherLoader.classList.remove('hidden');
+                    weatherResultsDiv.classList.add('hidden');
+                    navigator.geolocation.getCurrentPosition(async (position) => {
+                        const lat = position.coords.latitude;
+                        const lon = position.coords.longitude;
+                        try {
+                            // Open-Meteo API (API anahtarı gerektirmez)
+                            const weatherApiUrl = `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current=temperature_2m,relative_humidity_2m,precipitation,weather_code,wind_speed_10m&hourly=precipitation_probability&timezone=auto`;
+                            const response = await fetch(weatherApiUrl);
+                            if (!response.ok) {
+                                throw new Error(`Hava durumu API'sinden hata: ${response.status}`);
+                            }
+                            const data = await response.json();
+
+                            if (data.current) {
+                                const current = data.current;
+                                temperatureSpan.textContent = current.temperature_2m.toFixed(1);
+                                humiditySpan.textContent = current.relative_humidity_2m;
+                                precipitationSpan.textContent = current.precipitation; // Son saatteki yağış
+                                windSpeedSpan.textContent = (current.wind_speed_10m * 3.6).toFixed(1); // m/s'den km/s'ye
+                                weatherIconDiv.innerHTML = getWeatherIcon(current.weather_code);
+                                weatherDescriptionSpan.textContent = getWeatherDescriptionText(current.weather_code);
+
+                                // Basit şehir adı tahmini (tersine geocoding olmadan)
+                                locationCitySpan.textContent = `Lat: ${lat.toFixed(2)}, Lon: ${lon.toFixed(2)}`;
+
+                                irrigationAdviceDiv.textContent = generateIrrigationAdvice(current.temperature_2m, current.precipitation, current.relative_humidity_2m);
+                                weatherResultsDiv.classList.remove('hidden');
+                                setTimeout(() => weatherResultsDiv.querySelector('.weather-card').classList.add('visible'), 50);
+
+                            } else {
+                                throw new Error("Hava durumu verileri alınamadı.");
+                            }
+                        } catch (error) {
+                            showModal('Hava Durumu Hatası', `Hava durumu bilgileri alınırken bir sorun oluştu: ${error.message}`, true);
+                            console.error("Hava durumu API hatası:", error);
+                        } finally {
+                            weatherLoader.classList.add('hidden');
+                        }
+                    }, (error) => {
+                        showModal('Konum Hatası', `Konum bilgisi alınamadı: ${error.message}. Lütfen tarayıcı ayarlarınızdan konum iznini kontrol edin.`, true);
+                        weatherLoader.classList.add('hidden');
+                    });
+                } else {
+                    showModal('Tarayıcı Uyumsuzluğu', 'Tarayıcınız konum servisini desteklemiyor.', true);
+                }
+            });
+        }
+
+        if(contactForm) {
+            contactForm.addEventListener('submit', function(event) {
+                event.preventDefault();
+                const name = document.getElementById('contactName').value;
+                const email = document.getElementById('contactEmail').value;
+                const subject = document.getElementById('contactSubject').value;
+                const message = document.getElementById('contactMessage').value;
+
+                // Burada normalde e-posta gönderme veya backend'e veri kaydetme işlemi yapılır.
+                // Şimdilik sadece bir onay mesajı gösterelim.
+                showModal('Mesaj Gönderilemedi', `${name}, mesajınız başarıyla alınamamıştır.  (Bu sadece bir demo mesajıdır.)`, false);
+                contactForm.reset(); // Formu temizle
+            });
+        }
+
+
+        // Sayfa yüklendiğinde ve URL hash'i değiştiğinde doğru sayfayı göster
+        function handleRouting() {
+            const hash = window.location.hash.substring(1); // # işaretini kaldır
+            const pageIdToLoad = hash ? hash + "Section" : "anaSayfaSection";
+            showPage(pageIdToLoad);
+        }
+
+        window.addEventListener('hashchange', handleRouting);
+        document.addEventListener('DOMContentLoaded', () => {
+            resetForm(); // Ana sayfa formunu sıfırla
+            handleRouting(); // İlk yüklemede doğru sayfayı göster
         });
     </script>
 </body>
